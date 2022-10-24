@@ -65,7 +65,7 @@ impl Game {
         self.cells = new_cells;
     }
 
-    fn count_neighbours(&self, pos: usize) -> u8 {
+    pub fn count_neighbours(&self, pos: usize) -> u8 {
         let mut neighbours = 0;
         let pos = (
             (pos as isize - (self.width * (pos % self.width)) as isize),
@@ -73,8 +73,8 @@ impl Game {
         );
 
         let alive_neighbours = [
-            ((pos.0 - 1), pos.1),                     // -1, 0
-            ((pos.0 + 1), pos.1),                     // 1, 0
+            (pos.0 - 1, pos.1),                       // -1, 0
+            (pos.0 + 1, pos.1),                       // 1, 0
             (pos.0, pos.1 - self.width as isize),     // 0, -1
             (pos.0, pos.1 + self.width as isize),     // 0, 1
             (pos.0 - 1, pos.1 - self.width as isize), // -1, -1
@@ -119,6 +119,8 @@ impl std::ops::IndexMut<Position> for Game {
 
 #[cfg(test)]
 mod tests {
+    use std::cell;
+
     use super::*;
 
     #[test]
@@ -134,6 +136,73 @@ mod tests {
 
         for c in game.cells.iter() {
             assert_eq!(c, &Cell::Dead);
+        }
+    }
+
+    #[test]
+    // checking to see if after a 3x3 grid works
+    fn next_gen_correct() {
+        let cells = vec![
+            Cell::Dead,
+            Cell::Alive,
+            Cell::Dead,
+            Cell::Alive,
+            Cell::Dead,
+            Cell::Alive,
+            Cell::Dead,
+            Cell::Dead,
+            Cell::Dead,
+        ];
+
+        let mut game = Game::with_initial(3, 3,  cells);
+
+        game.next_gen();
+
+        assert_eq!(game.cells, vec![
+            Cell::Dead,
+            Cell::Dead,
+            Cell::Dead,
+            Cell::Dead,
+            Cell::Alive,
+            Cell::Dead,
+            Cell::Dead,
+            Cell::Dead,
+            Cell::Dead,
+        ]);
+    }
+
+    #[test]
+    // checking to see if after a 3x3 grid neighbours are correct
+    fn count_neighbours() {
+        let cells = vec![
+            Cell::Dead,
+            Cell::Alive,
+            Cell::Dead,
+            Cell::Alive,
+            Cell::Dead,
+            Cell::Alive,
+            Cell::Dead,
+            Cell::Dead,
+            Cell::Dead,
+        ];
+
+        let counts = vec![
+            2,
+            2,
+            2,
+            1,
+            3,
+            1,
+            1,
+            2,
+            1,
+        ];
+
+        let mut game = Game::with_initial(3, 3,  cells);
+
+        for (count, (i, _)) in counts.iter().zip(game.cells.iter().enumerate()) {
+            println!("{}", i);
+            assert_eq!(*count, game.count_neighbours(i))
         }
     }
 }
