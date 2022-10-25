@@ -47,26 +47,33 @@ impl Screen {
         // be able to break out of main loop
         'main: loop {
             if crossterm::event::poll(Duration::from_millis(32))? {
-                if let Event::Key(key) = event::read()? {
-                    match key.code {
-                        KeyCode::Char('q') => break,
-                        KeyCode::Char('a') => loop {
-                            terminal.draw(|frame| self.build_screen(frame))?;
-
-                            self.game.next_gen();
-                            sleep(Duration::from_millis(100));
-
-                            if (crossterm::event::poll(Duration::from_millis(1)))? {
-                                if let Event::Key(k) = event::read()? {
-                                    match k.code {
-                                        KeyCode::Char('s') => break,
-                                        KeyCode::Char('q') => break 'main,
-                                        _ => (),
+                if let Ok(event) = event::read() {
+                    match event {
+                        Event::Key(key) => match key.code {
+                            KeyCode::Char('q') => break,
+                            KeyCode::Char('a') => loop {
+                                terminal.draw(|frame| self.build_screen(frame))?;
+    
+                                self.game.next_gen();
+                                sleep(Duration::from_millis(100));
+    
+                                if (crossterm::event::poll(Duration::from_millis(1)))? {
+                                    if let Event::Key(k) = event::read()? {
+                                        match k.code {
+                                            KeyCode::Char('s') => break,
+                                            KeyCode::Char('q') => break 'main,
+                                            _ => (),
+                                        }
                                     }
                                 }
-                            }
+                            },
+                            _ => (),
                         },
-                        _ => (),
+                        Event::Resize(_, _) => {
+                            terminal.draw(|frame| self.build_screen(frame))?;
+                            ()
+                        },
+                        _ => ()
                     }
                 }
             }

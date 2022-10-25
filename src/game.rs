@@ -68,33 +68,31 @@ impl Game {
     pub fn count_neighbours(&self, pos: usize) -> u8 {
         let mut neighbours = 0;
         let pos = (
-            (pos as isize - (self.width * (pos % self.width)) as isize),
-            (pos % self.width) as isize,
+            (pos as isize - (self.width * (pos / self.width)) as isize),
+            (pos / self.width) as isize,
         );
 
         let alive_neighbours = [
             (pos.0 - 1, pos.1),                       // -1, 0
             (pos.0 + 1, pos.1),                       // 1, 0
-            (pos.0, pos.1 - self.width as isize),     // 0, -1
-            (pos.0, pos.1 + self.width as isize),     // 0, 1
-            (pos.0 - 1, pos.1 - self.width as isize), // -1, -1
-            (pos.0 - 1, pos.1 + self.width as isize), // -1, 1
-            (pos.0 + 1, pos.1 - self.width as isize), // 1, -1
-            (pos.0 + 1, pos.1 + self.width as isize), // 1, 1
+            (pos.0, pos.1 - 1),     // 0, -1
+            (pos.0, pos.1 + 1),     // 0, 1
+            (pos.0 - 1, pos.1 - 1), // -1, -1
+            (pos.0 - 1, pos.1 + 1), // -1, 1
+            (pos.0 + 1, pos.1 - 1), // 1, -1
+            (pos.0 + 1, pos.1 + 1), // 1, 1
         ];
 
-        let alive_neighbours: Vec<Position> = alive_neighbours
+        let alive_neighbours: Vec<usize> = alive_neighbours
             .into_iter()
-            .map(|el| {
-                (
-                    (el.0.rem_euclid(self.width as isize)) as usize,
-                    (el.1.rem_euclid(self.width as isize)) as usize,
-                )
-            })
+            .map(|el| 
+                (el.0.rem_euclid(self.width as isize) + el.1.rem_euclid(self.width as isize)*(self.height as isize)) as usize
+                // (el.0 + el.1 * self.width as isize).rem_euclid(self.size() as isize) as usize
+            )
             .collect();
 
         for n in alive_neighbours.into_iter() {
-            if self.index(n) == &Cell::Alive {
+            if self.cells[n] == Cell::Alive {
                 neighbours += 1;
             }
         }
@@ -119,8 +117,6 @@ impl std::ops::IndexMut<Position> for Game {
 
 #[cfg(test)]
 mod tests {
-    use std::cell;
-
     use super::*;
 
     #[test]
@@ -159,15 +155,15 @@ mod tests {
         game.next_gen();
 
         assert_eq!(game.cells, vec![
-            Cell::Dead,
-            Cell::Dead,
-            Cell::Dead,
-            Cell::Dead,
             Cell::Alive,
-            Cell::Dead,
-            Cell::Dead,
-            Cell::Dead,
-            Cell::Dead,
+            Cell::Alive,
+            Cell::Alive,
+            Cell::Alive,
+            Cell::Alive,
+            Cell::Alive,
+            Cell::Alive,
+            Cell::Alive,
+            Cell::Alive,
         ]);
     }
 
@@ -187,21 +183,20 @@ mod tests {
         ];
 
         let counts = vec![
-            2,
-            2,
-            2,
-            1,
             3,
-            1,
-            1,
             2,
-            1,
+            3,
+            2,
+            3,
+            2,
+            3,
+            3,
+            3,
         ];
 
         let mut game = Game::with_initial(3, 3,  cells);
 
         for (count, (i, _)) in counts.iter().zip(game.cells.iter().enumerate()) {
-            println!("{}", i);
             assert_eq!(*count, game.count_neighbours(i))
         }
     }
