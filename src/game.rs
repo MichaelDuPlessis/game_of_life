@@ -1,7 +1,4 @@
 // the game logic
-
-use std::ops::Index;
-
 type Position = (usize, usize);
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -83,19 +80,18 @@ impl Game {
             (pos.0 + 1, pos.1 + 1), // 1, 1
         ];
 
-        let alive_neighbours: Vec<usize> = alive_neighbours
+        let alive_neighbours: Vec<Position> = alive_neighbours
             .into_iter()
             .map(
                 |el| {
-                    (el.0.rem_euclid(self.width as isize)
-                        + el.1.rem_euclid(self.width as isize) * (self.height as isize))
-                        as usize
+                    (el.0.rem_euclid(self.width as isize) as usize, el.1.rem_euclid(self.height as isize)
+                        as usize)
                 }, // (el.0 + el.1 * self.width as isize).rem_euclid(self.size() as isize) as usize
             )
             .collect();
 
-        for n in alive_neighbours.into_iter() {
-            if self.cells[n] == Cell::Alive {
+        for pos in alive_neighbours.into_iter() {
+            if self[pos] == Cell::Alive {
                 neighbours += 1;
             }
         }
@@ -107,14 +103,14 @@ impl Game {
 impl std::ops::Index<Position> for Game {
     type Output = Cell;
 
-    fn index(&self, index: (usize, usize)) -> &Self::Output {
-        &self.cells[index.0 + index.1]
+    fn index(&self, index: Position) -> &Self::Output {
+        &self.cells[index.0 + index.1 * self.width]
     }
 }
 
 impl std::ops::IndexMut<Position> for Game {
-    fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
-        &mut self.cells[index.0 + index.1]
+    fn index_mut(&mut self, index: Position) -> &mut Self::Output {
+        &mut self.cells[index.0 + index.1 * self.width]
     }
 }
 
@@ -140,7 +136,7 @@ mod tests {
 
     #[test]
     // checking to see if after a 3x3 grid works
-    fn next_gen_correct() {
+    fn next_gen() {
         let cells = vec![
             Cell::Dead,
             Cell::Alive,
@@ -174,6 +170,47 @@ mod tests {
     }
 
     #[test]
+    // checking to see if after a 3x3 grid works
+    fn next_gen_non_square() {
+        let cells = vec![
+            Cell::Alive,
+            Cell::Dead,
+            Cell::Alive,
+            Cell::Dead,
+            Cell::Dead,
+            Cell::Dead,
+            Cell::Alive,
+            Cell::Dead,
+            Cell::Dead,
+            Cell::Dead,
+            Cell::Dead,
+            Cell::Alive,
+        ];
+
+        let mut game = Game::with_initial(4, 3, cells);
+
+        game.next_gen();
+
+        assert_eq!(
+            game.cells,
+            vec![
+                Cell::Dead,
+                Cell::Alive,
+                Cell::Alive,
+                Cell::Dead,
+                Cell::Dead,
+                Cell::Alive,
+                Cell::Alive,
+                Cell::Dead,
+                Cell::Dead,
+                Cell::Alive,
+                Cell::Alive,
+                Cell::Alive,
+            ]
+        );
+    }
+
+    #[test]
     // checking to see if after a 3x3 grid neighbours are correct
     fn count_neighbours() {
         let cells = vec![
@@ -190,10 +227,13 @@ mod tests {
 
         let counts = vec![3, 2, 3, 2, 3, 2, 3, 3, 3];
 
-        let mut game = Game::with_initial(3, 3, cells);
+        let game = Game::with_initial(3, 3, cells);
 
         for (count, (i, _)) in counts.iter().zip(game.cells.iter().enumerate()) {
             assert_eq!(*count, game.count_neighbours(i))
         }
     }
 }
+
+// [Dead, Alive, Alive, Dead, Dead, Alive, Alive, Dead, Dead, Alive, Alive, Alive]
+// [Dead, Alive, Alive, Dead, Alive, Alive, Alive, Dead, Dead, Alive, Alive, Dead]
