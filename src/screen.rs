@@ -53,10 +53,10 @@ impl Screen {
                             KeyCode::Char('q') => break,
                             KeyCode::Char('a') => loop {
                                 terminal.draw(|frame| self.build_screen(frame))?;
-    
+
                                 self.game.next_gen();
                                 sleep(Duration::from_millis(100));
-    
+
                                 if (crossterm::event::poll(Duration::from_millis(1)))? {
                                     if let Event::Key(k) = event::read()? {
                                         match k.code {
@@ -72,8 +72,8 @@ impl Screen {
                         Event::Resize(_, _) => {
                             terminal.draw(|frame| self.build_screen(frame))?;
                             ()
-                        },
-                        _ => ()
+                        }
+                        _ => (),
                     }
                 }
             }

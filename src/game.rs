@@ -36,7 +36,7 @@ impl Game {
     }
 
     pub fn with_initial(width: usize, height: usize, cells: Vec<Cell>) -> Self {
-        assert_eq!(width*height, cells.len());
+        assert_eq!(width * height, cells.len());
 
         Self {
             width,
@@ -73,8 +73,8 @@ impl Game {
         );
 
         let alive_neighbours = [
-            (pos.0 - 1, pos.1),                       // -1, 0
-            (pos.0 + 1, pos.1),                       // 1, 0
+            (pos.0 - 1, pos.1),     // -1, 0
+            (pos.0 + 1, pos.1),     // 1, 0
             (pos.0, pos.1 - 1),     // 0, -1
             (pos.0, pos.1 + 1),     // 0, 1
             (pos.0 - 1, pos.1 - 1), // -1, -1
@@ -85,9 +85,12 @@ impl Game {
 
         let alive_neighbours: Vec<usize> = alive_neighbours
             .into_iter()
-            .map(|el| 
-                (el.0.rem_euclid(self.width as isize) + el.1.rem_euclid(self.width as isize)*(self.height as isize)) as usize
-                // (el.0 + el.1 * self.width as isize).rem_euclid(self.size() as isize) as usize
+            .map(
+                |el| {
+                    (el.0.rem_euclid(self.width as isize)
+                        + el.1.rem_euclid(self.width as isize) * (self.height as isize))
+                        as usize
+                }, // (el.0 + el.1 * self.width as isize).rem_euclid(self.size() as isize) as usize
             )
             .collect();
 
@@ -150,21 +153,24 @@ mod tests {
             Cell::Dead,
         ];
 
-        let mut game = Game::with_initial(3, 3,  cells);
+        let mut game = Game::with_initial(3, 3, cells);
 
         game.next_gen();
 
-        assert_eq!(game.cells, vec![
-            Cell::Alive,
-            Cell::Alive,
-            Cell::Alive,
-            Cell::Alive,
-            Cell::Alive,
-            Cell::Alive,
-            Cell::Alive,
-            Cell::Alive,
-            Cell::Alive,
-        ]);
+        assert_eq!(
+            game.cells,
+            vec![
+                Cell::Alive,
+                Cell::Alive,
+                Cell::Alive,
+                Cell::Alive,
+                Cell::Alive,
+                Cell::Alive,
+                Cell::Alive,
+                Cell::Alive,
+                Cell::Alive,
+            ]
+        );
     }
 
     #[test]
@@ -182,19 +188,9 @@ mod tests {
             Cell::Dead,
         ];
 
-        let counts = vec![
-            3,
-            2,
-            3,
-            2,
-            3,
-            2,
-            3,
-            3,
-            3,
-        ];
+        let counts = vec![3, 2, 3, 2, 3, 2, 3, 3, 3];
 
-        let mut game = Game::with_initial(3, 3,  cells);
+        let mut game = Game::with_initial(3, 3, cells);
 
         for (count, (i, _)) in counts.iter().zip(game.cells.iter().enumerate()) {
             assert_eq!(*count, game.count_neighbours(i))
