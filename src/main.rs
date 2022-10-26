@@ -1,3 +1,8 @@
+mod game;
+mod screen;
+
 fn main() {
-    println!("Hello, world!");
+    let mut screen = screen::Screen::new(25, 25).unwrap();
+
+    screen.start().unwrap();
 }
