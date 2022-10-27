@@ -1,3 +1,5 @@
+use std::path::Path;
+
 // the game logic
 type Position = (usize, usize);
 
@@ -30,6 +32,36 @@ impl Game {
             height,
             cells,
         }
+    }
+
+    pub fn from_file(path: impl AsRef<Path>) -> std::io::Result<Self> {
+        let data = std::fs::read_to_string(path)?;
+        let data = data.trim().split('\n');
+        let width = &mut 0;
+        let height = &mut 0;
+
+        let cells = data
+            .map(|row| {
+                *height += 1;
+                *width = 0;
+
+                row.trim()
+                .chars()
+                .map(|c| {
+                    *width += 1;
+
+                    if c == 'X' {
+                        Cell::Alive
+                    } else {
+                        Cell::Dead
+                    }
+                })
+                .collect::<Vec<Cell>>()
+            })
+            .flatten()
+            .collect::<Vec<Cell>>();
+
+        Ok(Self::with_initial(*width, *height, cells))
     }
 
     pub fn generate(&mut self) {
@@ -245,7 +277,12 @@ mod tests {
             assert_eq!(*count, game.count_neighbours(i))
         }
     }
-}
 
-// [Dead, Alive, Alive, Dead, Dead, Alive, Alive, Dead, Dead, Alive, Alive, Alive]
-// [Dead, Alive, Alive, Dead, Alive, Alive, Alive, Dead, Dead, Alive, Alive, Dead]
+    #[test]
+    // testing to see if reading from file works
+    fn read_from_file() {
+        let game = Game::from_file("./test_input.txt").unwrap();
+
+        assert_eq!(game.cells, vec![Cell::Alive, Cell::Dead, Cell::Dead, Cell::Dead, Cell::Alive, Cell::Dead, Cell::Alive, Cell::Alive, Cell::Dead]);
+    }
+}
