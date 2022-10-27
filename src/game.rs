@@ -32,6 +32,16 @@ impl Game {
         }
     }
 
+    pub fn generate(&mut self) {
+        for cell in self.cells.iter_mut() {
+            *cell = if rand::random() {
+                Cell::Alive
+            } else {
+                Cell::Dead
+            }
+        }
+    }
+
     pub fn with_initial(width: usize, height: usize, cells: Vec<Cell>) -> Self {
         assert_eq!(width * height, cells.len());
 
@@ -62,7 +72,7 @@ impl Game {
         self.cells = new_cells;
     }
 
-    pub fn count_neighbours(&self, pos: usize) -> u8 {
+    fn count_neighbours(&self, pos: usize) -> u8 {
         let mut neighbours = 0;
         let pos = (
             (pos as isize - (self.width * (pos / self.width)) as isize),
@@ -80,14 +90,15 @@ impl Game {
             (pos.0 + 1, pos.1 + 1), // 1, 1
         ];
 
+        // mapping position moves to actualy usable coords
         let alive_neighbours: Vec<Position> = alive_neighbours
             .into_iter()
-            .map(
-                |el| {
-                    (el.0.rem_euclid(self.width as isize) as usize, el.1.rem_euclid(self.height as isize)
-                        as usize)
-                }, // (el.0 + el.1 * self.width as isize).rem_euclid(self.size() as isize) as usize
-            )
+            .map(|el| {
+                (
+                    el.0.rem_euclid(self.width as isize) as usize,
+                    el.1.rem_euclid(self.height as isize) as usize,
+                )
+            })
             .collect();
 
         for pos in alive_neighbours.into_iter() {
@@ -100,6 +111,7 @@ impl Game {
     }
 }
 
+// used to index with Position tuple
 impl std::ops::Index<Position> for Game {
     type Output = Cell;
 

@@ -2,6 +2,17 @@
     functions to draw to screen
 */
 
+// enum representing types of input
+#[non_exhaustive]
+struct Input {}
+
+impl Input {
+    const ANIMATE: KeyCode = KeyCode::Char('a');
+    const QUIT: KeyCode = KeyCode::Char('q');
+    const STOP_ANIMATION: KeyCode = KeyCode::Char('s');
+    const GENERATE: KeyCode = KeyCode::Char('g');
+}
+
 use crate::game::{self, Cell};
 use crossterm::{
     event::{self, DisableMouseCapture, Event, KeyCode},
@@ -38,8 +49,15 @@ pub fn start(mut game: game::Game) -> Result<(), io::Error> {
             if let Ok(event) = event::read() {
                 match event {
                     Event::Key(key) => match key.code {
-                        KeyCode::Char('q') => break,
-                        KeyCode::Char('a') => loop {
+                        // quit
+                        Input::QUIT => break,
+                        // generate new pattern
+                        Input::GENERATE => {
+                            game.generate();
+                            terminal.draw(|frame| build_screen(frame, &game))?;
+                        }
+                        // start animation
+                        Input::ANIMATE => loop {
                             terminal.draw(|frame| build_screen(frame, &game))?;
 
                             game.next_gen();
@@ -48,8 +66,10 @@ pub fn start(mut game: game::Game) -> Result<(), io::Error> {
                             if (crossterm::event::poll(Duration::from_millis(1)))? {
                                 if let Event::Key(k) = event::read()? {
                                     match k.code {
-                                        KeyCode::Char('s') => break,
-                                        KeyCode::Char('q') => break 'main,
+                                        // stop animation
+                                        Input::STOP_ANIMATION => break,
+                                        // quit
+                                        Input::QUIT => break 'main,
                                         _ => (),
                                     }
                                 }
