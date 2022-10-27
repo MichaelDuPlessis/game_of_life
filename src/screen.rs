@@ -11,6 +11,7 @@ impl Input {
     const QUIT: KeyCode = KeyCode::Char('q');
     const STOP_ANIMATION: KeyCode = KeyCode::Char('s');
     const GENERATE: KeyCode = KeyCode::Char('g');
+    const NEXT: KeyCode = KeyCode::Char('n');
 }
 
 use crate::game::{self, Cell};
@@ -55,6 +56,10 @@ pub fn start(mut game: game::Game) -> Result<(), io::Error> {
                         Input::GENERATE => {
                             game.generate();
                             terminal.draw(|frame| build_screen(frame, &game))?;
+                        },
+                        Input::NEXT => {
+                            game.next_gen();
+                            terminal.draw(|frame| build_screen(frame, &game))?;
                         }
                         // start animation
                         Input::ANIMATE => loop {
@@ -79,7 +84,6 @@ pub fn start(mut game: game::Game) -> Result<(), io::Error> {
                     },
                     Event::Resize(_, _) => {
                         terminal.draw(|frame| build_screen(frame, &game))?;
-                        ()
                     }
                     _ => (),
                 }
