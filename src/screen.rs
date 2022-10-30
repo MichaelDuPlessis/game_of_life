@@ -165,11 +165,15 @@ impl Screen {
 
     // draws an array of bools as blocks to screen based on width and size
     fn build_screen(&self, frame: &mut Frame<CrosstermBackend<Stdout>>) {
-        let length = if self.game.width() * 2 > self.input.len() {
-            self.game.width() * 2
-        } else {
-            self.input.len()
-        };
+        // making sure that there is always a minimu length
+        let length = [
+            self.game.width() * 2,
+            self.input.len(),
+            "Game of Life".len(),
+        ]
+        .into_iter()
+        .max()
+        .unwrap(); // iterator can never be empty
 
         let size = frame.size();
         let chunks = Layout::default()
@@ -189,18 +193,7 @@ impl Screen {
             )
             .split(chunks[0]);
 
-        let world = Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints(
-                [
-                    Constraint::Length((self.game.width() * 2) as u16 + 2),
-                    Constraint::Length(0),
-                ]
-                .as_ref(),
-            )
-            .split(layout[0]);
-
-        frame.render_widget(self.build_game(), world[0]);
+        frame.render_widget(self.build_game(), layout[0]);
         frame.render_widget(self.build_input(), layout[1]);
 
         match self.mode {
@@ -240,7 +233,7 @@ impl Screen {
 
         let block = Block::default()
             .title("Game Of Life")
-            .title_alignment(Alignment::Center)
+            .title_alignment(Alignment::Left)
             .borders(Borders::ALL);
 
         Paragraph::new(spans)
