@@ -10,8 +10,8 @@ pub enum Cell {
 }
 
 pub struct Game {
-    pub width: usize,
-    pub height: usize,
+    width: usize,
+    height: usize,
     pub cells: Vec<Cell>,
 }
 
@@ -84,8 +84,19 @@ impl Game {
         }
     }
 
+    // getting amount of cells
     pub fn size(&self) -> usize {
         self.width * self.height
+    }
+
+    // getting width
+    pub fn width(&self) -> usize {
+        self.width
+    }
+
+    // getting height
+    pub fn height(&self) -> usize {
+        self.height
     }
 
     pub fn next_gen(&mut self) {
