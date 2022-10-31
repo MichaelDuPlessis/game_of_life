@@ -185,7 +185,7 @@ impl Screen {
             .direction(Direction::Vertical)
             .constraints(
                 [
-                    Constraint::Length(self.game.height() as u16 + 2),
+                    Constraint::Percentage(95),
                     Constraint::Length(3),
                     Constraint::Length(0),
                 ]
