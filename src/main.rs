@@ -2,7 +2,8 @@ mod game;
 mod screen;
 
 fn main() -> Result<(), std::io::Error> {
-    screen::start(game::Game::new(30, 30))?;
+    let mut screen = screen::Screen::new(game::Game::new(30, 30));
+    screen.start()?;
     
     Ok(())
 }
